@@ -142,7 +142,7 @@ class Yolo(object):
         for i in range(num_boxes):
             if int(out_classes[i]) < 0 or int(out_classes[i]) > len(classes):
                 continue
-            coor = out_boxes[i]
+            coor = list(out_boxes[i])
             score = out_scores[i]
             class_ind = int(out_classes[i])
             class_name = classes[class_ind]

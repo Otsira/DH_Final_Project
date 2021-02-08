@@ -38,7 +38,6 @@ def read_plates(video: UploadFile = File(...), frames: Optional[int] = 5):
         file.close()
         # temp_video.close()
     vid = cv2.VideoCapture(temp_video.name)
-    vid_len = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
     frame_num = 0
     while True:
         return_value, frame = vid.read()
@@ -58,15 +57,17 @@ def read_plates(video: UploadFile = File(...), frames: Optional[int] = 5):
             plates = plate_localizer.crop_objects(
                 img, pred_bbox, ['license_plate'])
             track_plates = []
+            predictions = [plate_reader.read_plate(
+                plate['img']) for plate in plates]
             for track in tracks:
                 xmin, ymin, xmax, ymax = track.to_tlbr()
-                for plate in plates:
+                for plate, ocr in zip(plates, predictions):
                     pxmin, pymin, pxmax, pymax = plate['coordinates']
-                    if (xmax < pxmax and ymax > pymax):
-                        track_plates.append(
-                            {'track': track.track_id, 'class': track.class_name,  **plate})
+                    if xmin < pxmin and ymin < pymin:
+                        if xmax > pxmax and ymax > pymax:
+                            track_plates.append(
+                                {'track': track.track_id, 'frame': frame_num, 'class': track.class_name,  **plate, **ocr})
 
-            frame_num += 1
+        frame_num += 1
 
-    print(vid_len)
-    return {'name': vid_len}
+    return track_plates
