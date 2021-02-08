@@ -32,21 +32,23 @@ class Yolo(object):
         pred_conf = value[:, :, 4:]
         return pred_conf, boxes
 
-    def load_image(self, image: bytes):
-        image = np.fromstring(image, np.uint8)
-        image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+    def load_image(self, image: bytes, from_string: bool = True):
+        if from_string:
+            image = np.fromstring(image, np.uint8)
+            image = cv2.imdecode(image, cv2.IMREAD_COLOR)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         data = [cv2.resize(
                 image, (self.config.SIZE, self.config.SIZE)) / 255.]
         data = np.asarray(data).astype(np.float32)
         return data, image
 
-    def load_images(self, images: List[bytes]):
+    def load_images(self, images: List[bytes], from_string: bool = True):
         images_data = []
         images_cv2 = []
         for image in images:
-            image = np.fromstring(image, np.uint8)
-            image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+            if from_string:
+                image = np.fromstring(image, np.uint8)
+                image = cv2.imdecode(image, cv2.IMREAD_COLOR)
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             images_cv2.append(image)
             image_data = cv2.resize(

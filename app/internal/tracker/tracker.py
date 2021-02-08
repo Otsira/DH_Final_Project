@@ -1,5 +1,5 @@
 from os import name
-from internal.yolo import Yolo
+from app.internal.yolo import Yolo
 from .config import detector, sorter
 # deep sort imports
 from .deep_sort import preprocessing, nn_matching
@@ -14,11 +14,14 @@ import cv2
 
 class Tracker(Yolo):
     def __init__(self):
+        self.allowed_classes = ["car"]
         super().__init__(detector)
         self.encoder = gdet.create_box_encoder(sorter.path, batch_size=1)
         self.metric = nn_matching.NearestNeighborDistanceMetric(
             "cosine", sorter.max_cosine_distance, sorter.nn_budget)
         cmap = plt.get_cmap('tab20b')
+        self.coco_names = list(self.read_class_names(
+            self.config.COCO).values())
         self.colors = [cmap(i)[:3] for i in np.linspace(0, 1, 20)]
 
     def create_tracker(self):
@@ -28,8 +31,8 @@ class Tracker(Yolo):
         del self.deepTracker
 
     def process_tracker(self, pred, img):
-        boxes, scores, names, _ = pred
-        features = self.encoder(img,  pred[0])
+        boxes, scores, names, _ = self.remove_unallowed(pred)
+        features = self.encoder(img,  boxes)
         detections = [Detection(bbox, score, class_name, feature) for bbox,
                       score, class_name, feature in zip(boxes, scores, names, features)]
         boxs = np.array([d.tlwh for d in detections])
@@ -44,6 +47,22 @@ class Tracker(Yolo):
         self.deepTracker.predict()
         self.deepTracker.update(detections)
         return self.deepTracker.tracks
+
+    def remove_unallowed(self, pred):
+        box, scores, classes, num_obj = pred
+        names = []
+        deleted_indx = []
+        for i in range(num_obj):
+            class_indx = int(classes[i])
+            class_name = self.coco_names[class_indx]
+            if class_name not in self.allowed_classes:
+                deleted_indx.append(i)
+            else:
+                names.append(class_name)
+        names = np.array(names)
+        box = np.delete(box, deleted_indx, axis=0)
+        scores = np.delete(scores, deleted_indx, axis=0)
+        return box, scores, names, num_obj
 
     def draw_boxes(self, tracks, frame):
         for track in tracks.tracks:
