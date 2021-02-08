@@ -11,8 +11,8 @@ detector = __C
 __C.IOU = 0.45
 __C.SCORE = 0.50
 __C.SIZE = 416
-__C.PATH = './internal/models/car_yolo'
-__C.CLASSES = "./internal/models/car_yolo/car.names"
+__C.PATH = './app/internal/models/car_yolo'
+__C.CLASSES = "./app/internal/models/car_yolo/car.names"
 __C.ANCHORS = [12, 16, 19, 36, 40, 28, 36, 75,
                76, 55, 72, 146, 142, 110, 192, 243, 459, 401]
 __C.ANCHORS_V3 = [10, 13, 16, 30, 33, 23, 30, 61,

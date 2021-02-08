@@ -1,4 +1,4 @@
-from internal.yolo import Yolo
+from app.internal.yolo import Yolo
 from .config import detector
 
 

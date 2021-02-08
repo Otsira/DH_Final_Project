@@ -24,6 +24,9 @@ class Tracker(Yolo):
     def create_tracker(self):
         self.deepTracker = deepTrack(self.metric)
 
+    def delete_tracker(self):
+        del self.deepTracker
+
     def process_tracker(self, pred, img):
         boxes, scores, names, _ = pred
         features = self.encoder(img,  pred[0])

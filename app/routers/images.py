@@ -4,8 +4,8 @@ from pydantic import BaseModel
 from starlette.responses import Response, StreamingResponse
 
 
-from internal.license_plate.localizer import Localizer
-from internal.license_plate.recognizer import Recognizer
+from app.internal.license_plate.localizer import Localizer
+from app.internal.license_plate.recognizer import Recognizer
 
 import io
 import cv2
