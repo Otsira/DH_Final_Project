@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from starlette import responses
 from starlette.responses import Response, StreamingResponse
 import json
+import asyncio
 from app.internal.license_plate.localizer import Localizer
 from app.internal.license_plate.recognizer import Recognizer
 from app.internal.tracker.tracker import Tracker
@@ -45,7 +46,7 @@ async def read_plates(video: UploadFile = File(...), frames: Optional[int] = 5):
     return response
 
 
-@router.post('/draw_plates')
+@router.post('/stream_plates')
 async def draw_plates(video: UploadFile = File(...), frames: Optional[int] = 5):
     await car_tracker.create_tracker()
     # Sadly opencv only reads from disk
@@ -56,8 +57,9 @@ async def draw_plates(video: UploadFile = File(...), frames: Optional[int] = 5):
         # temp_video.close()
     vid = cv2.VideoCapture(temp_video.name)
     video = video_draw(vid, frames)
-    response = StreamingResponse(
-        video, media_type='media_type="image/jpg"')
+    response = StreamingResponse(video, media_type='video/x-motion-jpeg')
+    # response = StreamingResponse(
+    #     video, media_type='multipart/x-mixed-replace; boundary=frame')
     car_tracker.delete_tracker()
     return response
 
@@ -89,11 +91,14 @@ async def video_draw(vid, frames):
             frame = plate_localizer.draw_bbox(
                 frame, pred_bbox, custom_labels=license)
         result = np.asarray(frame)
-        result = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        result = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         _, jpeg = cv2.imencode('.jpg', result)
-        yield io.BytesIO(img.tobytes())
-        # yield (b'--frame\r\n'
-        #    b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n\r\n')
+        # yield (b'--frame\r\nContent-Type:image/jpeg\r\n\r\n'+jpeg.tobytes()+b'\r\n')
+        # await asyncio.sleep(0.01)
+        # yield jpeg
+        with io.BytesIO(jpeg.tobytes()) as stream:
+            data = stream.read()
+            yield data
         frame_num += 1
 
 
