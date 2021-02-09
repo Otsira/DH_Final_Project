@@ -24,10 +24,10 @@ class Tracker(Yolo):
             self.config.COCO).values())
         self.colors = [cmap(i)[:3] for i in np.linspace(0, 1, 20)]
 
-    def create_tracker(self):
+    async def create_tracker(self):
         self.deepTracker = deepTrack(self.metric)
 
-    def delete_tracker(self):
+    async def delete_tracker(self):
         del self.deepTracker
 
     def process_tracker(self, pred, img):
@@ -65,7 +65,7 @@ class Tracker(Yolo):
         return box, scores, names, num_obj
 
     def draw_boxes(self, tracks, frame):
-        for track in tracks.tracks:
+        for track in tracks:
             if not track.is_confirmed() or track.time_since_update > 1:
                 continue
             bbox = track.to_tlbr()
