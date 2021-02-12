@@ -35,14 +35,18 @@ class Recognizer():
         return plate, probs
 
     def read_plate(self, frame) -> dict:
-        im = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-        img = cv2.resize(im, dsize=(140, 70),
-                         interpolation=cv2.INTER_LINEAR)
-        img = img[np.newaxis, ..., np.newaxis] / 255.
-        img = tf.constant(img, dtype=tf.float32)
-        prediction = self.predict_from_array(img).numpy()
-        plate, probs = self.probs_to_plate(prediction)
-        plate_str = ''.join(plate)
-        print(f'License Plate #: {plate_str}', flush=True)
-        print(f'Confidence: {probs}', flush=True)
-        return {'plate': plate_str, 'probs': probs.tolist()}
+        try:
+            im = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+            img = cv2.resize(im, dsize=(140, 70),
+                             interpolation=cv2.INTER_LINEAR)
+            img = img[np.newaxis, ..., np.newaxis] / 255.
+            img = tf.constant(img, dtype=tf.float32)
+            prediction = self.predict_from_array(img).numpy()
+            plate, probs = self.probs_to_plate(prediction)
+            plate_str = ''.join(plate)
+            print(f'License Plate #: {plate_str}', flush=True)
+            print(f'Confidence: {probs}', flush=True)
+            return {'plate': plate_str, 'probs': probs.tolist()}
+        except:
+            print("Error")
+            return {'plate': '', 'probs': []}
