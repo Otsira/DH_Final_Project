@@ -49,7 +49,7 @@ stages:
       displayName: "Install requirements"
 
     - script: |
-        gdown --id 18AKwyZOirz2M1YbsS9sQe521gmfedal9
+        py -m gdown --id 18AKwyZOirz2M1YbsS9sQe521gmfedal9
     - task: ExtractFiles@1
       inputs:
         archiveFilePatterns: 'models.7z'
