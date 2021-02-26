@@ -16,10 +16,6 @@ import numpy as np
 from PIL import Image
 from tempfile import NamedTemporaryFile
 
-
-from shapely.geometry import Point, point
-from shapely.geometry.polygon import Polygon
-
 car_tracker = Tracker()
 plate_localizer = Localizer()
 plate_reader = Recognizer()
